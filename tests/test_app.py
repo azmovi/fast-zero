@@ -69,9 +69,10 @@ def teste_erro_read_user_not_found(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
-        '/users/1',
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'chapolin',
             'email': 'chapolin@example.com',
@@ -84,48 +85,47 @@ def test_update_user(client, user):
     assert response.json() == user_schema
 
 
-def test_erro_update_user_id_index_out_of_range(client):
+def test_error_update_user_not_enough_permissons(client, user, token):
     response = client.put(
-        '/users/0',
+        f'/users/{user.id-1}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'chapolin',
             'email': 'chapolin@example.com',
             'password': 'abc',
         },
     )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'User index out of range'}
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_erro_update_user_not_exist(client):
-    response = client.put(
-        '/users/2',
-        json={
-            'username': 'chapolin',
-            'email': 'chapolin@example.com',
-            'password': 'abc',
-        },
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
     )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_delete_user(client, user):
-    response = client.delete('/users/1')
 
     assert response.status_code == 200
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_erro_delete_user_index_out_of_range(client):
-    response = client.delete('/users/0')
+def test_error_delete_user_not_enough_permissons(client, user, token):
+    response = client.delete(
+        f'/users/{user.id-1}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'User index out of range'}
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_erro_delete_user_not_found(client, user):
-    response = client.delete('/users/2')
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+    token = response.json()
 
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == 200
+    assert 'access_token' in token
+    assert 'token_type' in token
