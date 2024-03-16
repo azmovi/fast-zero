@@ -17,13 +17,9 @@ def session():
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
-
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(engine)
-
-    Session = sessionmaker(bind=engine)
-
     yield Session()
-
     Base.metadata.drop_all(engine)
 
 
@@ -41,10 +37,11 @@ def client(session):
 
 @pytest.fixture
 def user(session):
+    password = 'testtest'
     user = User(
-        username='Test',
-        email='test@test.com',
-        password=get_password_hash('testtest'),
+        username='Teste',
+        email='teste@test.com',
+        password=get_password_hash(password),
     )
     session.add(user)
     session.commit()
@@ -58,7 +55,7 @@ def user(session):
 @pytest.fixture
 def token(client, user):
     response = client.post(
-        '/token',
+        '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
     )
     return response.json()['access_token']
