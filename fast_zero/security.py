@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jwt import DecodeError, decode, encode
+from jwt import DecodeError, ExpiredSignatureError, decode, encode
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -46,7 +46,7 @@ async def get_current_user(
 ):
     credentials_expection = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail='Could not valitade credentials',
+        detail='Could not validate credentials',
         headers={'WWW-Authenticate': 'Bearer'},
     )
 
@@ -62,6 +62,8 @@ async def get_current_user(
         token_data = TokenData(username=username)
 
     except DecodeError:
+        raise credentials_expection
+    except ExpiredSignatureError:
         raise credentials_expection
 
     user = session.scalar(
