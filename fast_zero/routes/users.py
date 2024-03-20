@@ -76,11 +76,7 @@ def update_user(
 
 
 @router.delete('/{user_id}/', response_model=Message)
-def delete_user(
-    user_id: int,
-    session: Session,
-    current_user: CurrentUser,
-):
+def delete_user(user_id: int, session: Session, current_user: CurrentUser):
     """Deleta um usuario dado seu id"""
 
     if current_user.id != user_id:
@@ -88,4 +84,4 @@ def delete_user(
 
     session.delete(current_user)
     session.commit()
-    return {'message': 'User deleted'}
+    return {'detail': 'User deleted'}

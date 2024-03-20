@@ -8,6 +8,8 @@ from fast_zero.app import app
 from fast_zero.database import get_session
 from fast_zero.models import Base
 from fast_zero.security import get_password_hash
+
+# from fast_zero.settings import Settings
 from tests.factories import UserFactory
 
 
@@ -18,9 +20,12 @@ def session():
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
-    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(engine)
+
+    Session = sessionmaker(bind=engine)
+
     yield Session()
+
     Base.metadata.drop_all(engine)
 
 

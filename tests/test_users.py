@@ -112,7 +112,7 @@ def test_delete_user(client, user, token):
     )
 
     assert response.status_code == 200
-    assert response.json() == {'message': 'User deleted'}
+    assert response.json() == {'detail': 'User deleted'}
 
 
 def test_error_delete_user_not_enough_permissons(client, other_user, token):

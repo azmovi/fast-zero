@@ -22,11 +22,7 @@ Session = Annotated[Session, Depends(get_session)]
 
 
 @router.post('/', response_model=TodoPublic)
-def create_todo(
-    todo: TodoSchema,
-    user: CurrentUser,
-    session: Session,
-):
+def create_todo(todo: TodoSchema, user: CurrentUser, session: Session):
     db_todo: Todo = Todo(
         title=todo.title,
         description=todo.description,
@@ -48,8 +44,8 @@ def list_todos(
     title: str = Query(None),
     description: str = Query(None),
     state: str = Query(None),
-    offset: int = Query(0),
-    limit: int = Query(10),
+    offset: int = Query(None),
+    limit: int = Query(None),
 ):
     query = select(Todo).where(Todo.user_id == user.id)
 
@@ -60,7 +56,7 @@ def list_todos(
         query = query.filter(Todo.description.contains(description))
 
     if state:
-        query = query.filter(Todo.state.contains(state))
+        query = query.filter(Todo.state == state)
 
     todos = session.scalars(query.offset(offset).limit(limit)).all()
 
@@ -100,4 +96,4 @@ def delete_todo(todo_id: int, session: Session, user: CurrentUser):
     session.delete(db_todo)
     session.commit()
 
-    return {'message': 'Task has been deleted successfully.'}
+    return {'detail': 'Task has been deleted successfully.'}

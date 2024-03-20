@@ -150,9 +150,7 @@ def test_delete_todo(client, session, user, token):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        'message': 'Task has been deleted successfully.'
-    }
+    assert response.json() == {'detail': 'Task has been deleted successfully.'}
 
 
 def test_delete_todo_error(client, token):

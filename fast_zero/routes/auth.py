@@ -14,16 +14,13 @@ from fast_zero.security import (
     verify_password,
 )
 
-router = APIRouter(prefix='/auth', tags=['auth'])
+router = APIRouter(prefix='/auth', tags=['token'])
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 Session = Annotated[Session, Depends(get_session)]
 
 
 @router.post('/token', response_model=Token)
-def login_for_acess_token(
-    form_data: OAuth2Form,
-    session: Session,
-):
+def login_for_acess_token(form_data: OAuth2Form, session: Session):
     """Cria um login para acessar por meio do OAuth2"""
 
     user = session.scalar(select(User).where(User.email == form_data.username))
@@ -44,7 +41,7 @@ def login_for_acess_token(
 
 
 @router.post('/refresh_token', response_model=Token)
-def refresh_access_token(user: User = Depends(get_current_user)):
+def refresh_access_token(user: Annotated[User, Depends(get_current_user)]):
 
     new_access_token = create_access_token(data={'sub': user.email})
 
