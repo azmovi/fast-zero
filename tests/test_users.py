@@ -91,9 +91,9 @@ def test_update_user(client, user, token):
     assert response.json() == user_schema
 
 
-def test_error_update_user_not_enough_permissons(client, other_user, token):
+def test_error_update_user_not_enough_permissons(client, user2, token):
     response = client.put(
-        f'/users/{other_user.id}',
+        f'/users/{user2.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'chapolin',
@@ -115,9 +115,9 @@ def test_delete_user(client, user, token):
     assert response.json() == {'detail': 'User deleted'}
 
 
-def test_error_delete_user_not_enough_permissons(client, other_user, token):
+def test_error_delete_user_not_enough_permissons(client, user2, token):
     response = client.delete(
-        f'/users/{other_user.id}',
+        f'/users/{user2.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
