@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from httpx import HTTPStatus
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,9 +15,13 @@ Session = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.post('/', response_model=UserPublic, status_code=201)
+@router.post('/', response_model=UserPublic, status_code=HTTPStatus.CREATED)
 def create_user(user: UserSchema, session: Session):
-    db_user = session.scalar(select(User).where(User.email == user.email))
+    db_user = session.scalar(
+        select(User).where(
+            (User.email == user.email) | (User.username == user.username)
+        )
+    )
     if db_user:
         raise HTTPException(status_code=400, detail='Email already registered')
 

@@ -1,8 +1,10 @@
 from enum import Enum
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from datetime import datetime
+from sqlalchemy import ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship, registry
 
+table_registry = registry()
 
 class TodoState(str, Enum):
     draft = 'draft'
@@ -12,24 +14,24 @@ class TodoState(str, Enum):
     trash = 'trash'
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-class User(Base):
+@table_registry.mapped_as_dataclass
+class User:
     __tablename__ = 'users'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str]
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
-    email: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
 
     todos: Mapped[list['Todo']] = relationship(
         back_populates='user', cascade='all, delete-orphan'
     )
 
 
-class Todo(Base):
+class Todo:
     __tablename__ = 'todos'
 
     id: Mapped[int] = mapped_column(primary_key=True)
